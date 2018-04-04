@@ -1,5 +1,9 @@
 package com.dell.bitbucket.merge.checks.hook;
 
+
+/* DELL.com all rights reserved 2018 */
+/* Author Peter M. Gits peter.gits@dell.com */
+
 import com.atlassian.bitbucket.hook.repository.*;
 import com.atlassian.bitbucket.pull.PullRequestParticipant;
 import com.atlassian.bitbucket.repository.Repository;
@@ -28,7 +32,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.*;
-//import com.atlassian.bitbucket.i18n.I18nService;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
@@ -49,6 +52,7 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+//import com.atlassian.bitbucket.i18n.I18nService;
 
 public class mergeTriggerCheck implements MergeRequestCheck {
 
@@ -60,15 +64,15 @@ public class mergeTriggerCheck implements MergeRequestCheck {
     public mergeTriggerCheck(/*I18nService i18nService, PullRequestService pullRequestService*/) {
         //this.i18nService = i18nService;
         //this.pullRequestService = pullRequestService;
-        log.error("initialized mergeTriggerCheck");
+        log.info("initialized mergeTriggerCheck");
+        //this is here because it wasn't originally triggering...
     }
 
     @Override
     public void check(@Nonnull MergeRequest request) {
-        log.error(String.format("MergeRequest check called:  repo name = %s", request.getPullRequest().getToRef().getRepository().getName()));
-
-
-        log.error("running com.dell.bitbucket.merge.checks.hook.mergeTriggerCheck:check");
+        log.info(String.format("MergeRequest check called:  repo name = [%s]", request.getPullRequest().getToRef().getRepository().getName()));
+        
+        //log.info("running com.dell.bitbucket.merge.checks.hook.mergeTriggerCheck:check");
         MergeRequest mr        = request;
         PullRequest pr         = mr.getPullRequest();
         PullRequestRef prrFrom = pr.getFromRef();
@@ -84,9 +88,8 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         String fullPackageName = repository.getProject().getName();
         //String packageRevision = "4.0.0.84";
             if(!keyPackageName.toLowerCase().startsWith("ar")) {//this is not our repo, send it on its way
-            log.error("this packageName.key doesn't start with ar");
-            log.error(String.format("keyPackageName is equal to %s", keyPackageName.toLowerCase()));
-            log.error(String.format("RepositoryHookResult is now accepted"));
+            log.info("this packageName.key doesn't start with ar");
+            log.info(String.format("keyPackageName is equal to [%s][%s], RepositoryHookResult is now accepted", keyPackageName.toLowerCase(), request.getPullRequest().getToRef().getRepository().getName()));
             return ;//RepositoryHookResult.accepted();
         }
 
@@ -94,13 +97,10 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         String pullRequestId = String.valueOf(lpullRequestId);
         String jsonContainer = String.format("description=%s", pr.getDescription());
         String mergeUser = "Administrator";
-        //String newBranch = branch.replace("/", "!!!");
-        //char ampresand = '&';
 
         String charset = "UTF-8";  // Or in Java 7 and later, use the constant: java.nio.charset.StandardCharsets.UTF_8.name()
         try {
 
-            //URLConnection connection = new URL(url + "?" + query).openConnection();
             URLConnection connection = new URL(url).openConnection();
             HttpURLConnection http = (HttpURLConnection)connection;
             http.setRequestMethod("POST");
@@ -145,7 +145,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
             http.disconnect();
             if(returnResults.toString().contains("MergeCheckPassed")) {
                 if (returnResults.toString().contains("succeeded")) {
-                    log.error("returning success for merge, found MergeCheckPassed + succeeded");
+                    log.info("returning success for merge, found MergeCheckPassed + succeeded");
                     return;//RepositoryHookResult.accepted();
                 }
             }
@@ -162,107 +162,13 @@ public class mergeTriggerCheck implements MergeRequestCheck {
             log.error("ioException: returning success for merge");
             return ;//RepositoryHookResult.accepted();
         }
-        /*
-        String summaryMsg = "com.dell.bitbucket.merge.check.summary:  " +
-                "Only repository administrators may approve pull requests";
-        //request.veto(summaryMsg, detailedMsg);
-        */
 
         String summaryMsg  = "checking dell.engOps implementation";
         String detailedMsg = "com.dell.bitbucket.merge.check.detailed:  " +
                 "The pull request must first pass the Continuum: Merge Trigger Build & the Merge Trigger Smoke Test prior to merging ";
+        log.info(String.format("VETO fired: %s:%s", summaryMsg, detailedMsg));
+        log.error(String.format("VETO fired:  (Not an error) just need it printed to the log: %s:%s", summaryMsg, detailedMsg));
         mr.veto (summaryMsg, detailedMsg);
-        log.error(String.format("returning veto: %s:%s", summaryMsg, detailedMsg));
     }
 
 }
-
-
-/* PreRepositoryHook<RepositoryHookRequest>*/
-/*
-    @Nonnull
-    @Override
-    public RepositoryHookResult preUpdate(@Nonnull PreRepositoryHookContext context,
-                                          @Nonnull RepositoryHookRequest request) {
-
-        if(request.getTrigger() != PULL_REQUEST_MERGE)
-            return RepositoryHookResult.accepted();
-        else
-            System.out.println("We caught a Pull Request Merge!!!!");
-        // Find all refs that are about to be deleted
-        //
-        Set<String> deletedRefIds = request.getRefChanges().stream()
-                .filter(refChange -> refChange.getType() == RefChangeType.DELETE)
-                .map(refChange -> refChange.getRef().getId())
-                .collect(Collectors.toSet());
-
-        if (deletedRefIds.isEmpty()) {
-            // nothing is going to be deleted, no problem
-            return RepositoryHookResult.accepted();
-        }
-
-        // verify whether any of the refs are already in review
-        PullRequestSearchRequest searchRequest = new PullRequestSearchRequest.Builder()
-                .state(PullRequestState.OPEN)
-                .fromRefIds(deletedRefIds)
-                .fromRepositoryId(request.getRepository().getId())
-                .build();
-
-        Page<PullRequest> found = pullRequestService.search(searchRequest, PageUtils.newRequest(0, 1));
-        if (found.getSize() > 0) {
-            // found at least 1 open pull request from one of the refs that are about to be deleted
-            PullRequest pullRequest = found.getValues().iterator().next();
-            return RepositoryHookResult.rejected(
-                    i18nService.getMessage("hook.guide.branchinreview.summary"),
-                    i18nService.getMessage("hook.guide.branchinreview.details",
-                            pullRequest.getFromRef().getDisplayId(), pullRequest.getId()));
-        }
-//
-        return RepositoryHookResult.rejected("not gonna do it right now!!!");
-    }
-    */
-/*
-public class mergeTriggerCheck implements PreRepositoryHook<RepositoryHookRequest> //MergeRequestCheck,  RepositoryHookRequest,  RepositoryMergeRequestCheck, RepositorySettingsValidator//
-{
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
-
-    @Override
-    public void preUpdate(@Nonnull PreRepositoryHookContext context,
-                           @Nonnull RepositoryHookRequest hookRequest) {
-        PullRequestMergeHookRequest prMergeHook = hookRequest.getTrigger();
-    }
-     @Override
-    public void check(RepositoryMergeRequestCheckContext context)
-    {
-        int requiredReviewers = Integer.parseInt(context.getSettings().getString("reviewers"));
-        int acceptedCount = 0;
-        for (PullRequestParticipant reviewer : context.getMergeRequest().getPullRequest().getReviewers())
-        {
-            acceptedCount = acceptedCount + (reviewer.isApproved() ? 1 : 0);
-        }
-        if (acceptedCount < requiredReviewers)
-        {
-            context.getMergeRequest().veto("Not enough approved reviewers", acceptedCount + " reviewers have approved your pull request. You need " + requiredReviewers + " (total) before you may merge.");
-        }
-    }
-    @Override
-    public void check(@Nonnull MergeRequest request) {
-        System.out.println(String.format("got here, request repository is %s", request.getPullRequest().getToRef().getRepository()));
-    }
-
-        @Override
-    public void validate(Settings settings, SettingsValidationErrors errors, Repository repository)
-    {
-        String numReviewersString = settings.getString("reviewers", "0").trim();
-        if (!NUMBER_PATTERN.matcher(numReviewersString).matches())
-        {
-            errors.addFieldError("reviewers", "Enter a number");
-        }
-        else if (Integer.parseInt(numReviewersString) <= 0)
-        {
-            errors.addFieldError("reviewers", "Number of reviewers must be greater than zero");
-        }
-    }
-
-}
-*/
