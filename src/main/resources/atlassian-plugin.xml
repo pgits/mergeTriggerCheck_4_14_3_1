@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+  <plugin-info>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+    <param name="plugin-icon">images/pluginIcon.png</param>
+    <param name="plugin-logo">images/pluginLogo.png</param>
+  </plugin-info>
+  -->
+  <merge-check key="${project.artifactId}" name="Merge Trigger Check"  class="${project.groupId}.hook.mergeTriggerCheck">
+      <description key="${project.artifactId}.description">Enforce Merge Check that builds and smokes</description>
+      <icon>images/pluginIcon.png</icon>
+  </merge-check>
+</atlassian-plugin>
+        <!--
+   <resource type="PullRequestService" name="PullRequestService" location="mergeTriggerCheck_4_14_3_1"/>
+    -->
+        <!--
+        <component-import key="i18nService" interface="com.atlassian.bitbucket.i18n.I18nService"/>
+
+        <component key="isMergeCheck" class="com.dell.bitbucket.merge.checks.hook.mergeTriggerCheck"/>
+        <merge-check key="isCheckingMerges" class="bean:isMergeCheck"/>
+    -->
+        <!-- add our web resources
+        <web-resource key="mergeTriggerCheck_4_14_3_1-resources" name="mergeTriggerCheck_4_14_3_1 Web Resources">
+          <dependency>com.atlassian.auiplugin:ajs</dependency>
+          <resource type="download" name="mergeTriggerCheck_4_14_3_1.css" location="/css/mergeTriggerCheck_4_14_3_1.css"/>
+          <resource type="download" name="mergeTriggerCheck_4_14_3_1.js" location="/js/mergeTriggerCheck_4_14_3_1.js"/>
+          <resource type="download" name="images/" location="/images"/>
+          <context>mergeTriggerCheck_4_14_3_1</context>
+        </web-resource>
+        -->
+        <!--
+        <repository-hook key="merge-trigger-check" name="merge Trigger Check" i18n-name-key="merge-trigger-check.name" class="com.dell.bitbucket.merge.checks.hook.mergeTriggerCheck">
+          <description key="merge-trigger-check.description">The merge Trigger Check Plugin</description>
+          <icon>icon-example.png</icon>
+          <config-form name="merge Trigger Check Config" key="merge-trigger-check-config">
+            <view>com.dell.bitbucket.merge.checks.hook.mergetriggercheck.view</view>
+            <directory location="/static/"/>
+          </config-form>
+        </repository-hook>
+        -->
+        <!--
+         <atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+
+         <plugin-info>
+             <description>${project.description}</description>
+             <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+             <version>${project.version}</version>
+             <permissions>
+                 <permission>execute_java</permission>
+             </permissions>
+
+             <param name="plugin-icon">images/pluginIcon.png</param>
+             <param name="plugin-logo">images/pluginLogo.png</param>
+         </plugin-info>
+         -->
+        <!-- add our i18n resource -->
+
+        <!-- <resource type="i18n" name="i18n" location="mergeTriggerCheck_4_14_3_1"/> -->
