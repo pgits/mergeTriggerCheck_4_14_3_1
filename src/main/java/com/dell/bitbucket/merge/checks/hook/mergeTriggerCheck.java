@@ -71,7 +71,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
     @Override
     public void check(@Nonnull MergeRequest request) {
         log.info(String.format("MergeRequest check called:  repo name = [%s]", request.getPullRequest().getToRef().getRepository().getName()));
-        
+
         //log.info("running com.dell.bitbucket.merge.checks.hook.mergeTriggerCheck:check");
         MergeRequest mr        = request;
         PullRequest pr         = mr.getPullRequest();
@@ -80,7 +80,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
 
 
         Repository repository = prrTo.getRepository();
-        String url = "http://dockerlogin-eqx-01.force10networks.com:8080/mergeTrigger.php";
+        String url = "http://dockerlogin-eqx-02.force10networks.com:8080/mergeTrigger.php";
         String branch = prrTo.getDisplayId();
         String packageName = repository.getName();
 
