@@ -82,6 +82,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         Repository repository = prrTo.getRepository();
         String url = "http://dockerlogin-eqx-02.force10networks.com:8080/mergeTrigger.php";
         String branch = prrTo.getDisplayId();
+        String branchFrom = prrFrom.getDisplayId();
         String packageName = repository.getName();
 
         String keyPackageName  = repository.getProject().getKey();
@@ -97,6 +98,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         String pullRequestId = String.valueOf(lpullRequestId);
         String jsonContainer = String.format("description=%s", pr.getDescription());
         String mergeUser = "Administrator";
+        StringBuilder returnResults = new StringBuilder();
 
         String charset = "UTF-8";  // Or in Java 7 and later, use the constant: java.nio.charset.StandardCharsets.UTF_8.name()
         try {
@@ -107,12 +109,15 @@ public class mergeTriggerCheck implements MergeRequestCheck {
             http.setDoOutput(true);
 
             Map<String,String> arguments = new HashMap();
+            arguments.put("from_branch", branchFrom);
             arguments.put("my_branch", branch);
             arguments.put("packageName", packageName);
             arguments.put("packageRevision", "-1");
             arguments.put("jsonContainer", jsonContainer);
             arguments.put("mergeUser", mergeUser);
             arguments.put("pullRequestId", pullRequestId);
+            arguments.put("from_branch_full", prrFrom.toString());
+            arguments.put("to_branch_full", prrTo.toString());
 
             StringJoiner sj = new StringJoiner("&");
             for(Map.Entry<String,String> entry : arguments.entrySet())
@@ -136,7 +141,7 @@ public class mergeTriggerCheck implements MergeRequestCheck {
             java.io.BufferedReader reader = new java.io.BufferedReader(new InputStreamReader(response));
             // And print each line
             String s = null;
-            StringBuilder returnResults = new StringBuilder();
+
             Boolean returnValue = false;
             while ((s = reader.readLine()) != null) {
                 log.info(s);
@@ -163,9 +168,9 @@ public class mergeTriggerCheck implements MergeRequestCheck {
             return ;//RepositoryHookResult.accepted();
         }
 
-        String summaryMsg  = "checking dell.engOps implementation";
-        String detailedMsg = "com.dell.bitbucket.merge.check.detailed:  " +
-                "The pull request must first pass the Continuum: Merge Trigger Build & the Merge Trigger Smoke Test prior to merging ";
+        String summaryMsg  = "com.dell.bitbucket.merge.check.detailed:";
+        String detailedMsg = returnResults.toString();
+               // "The pull request must first pass the Continuum: Merge Trigger Build & the Merge Trigger Smoke Test prior to merging ";
         log.info(String.format("VETO fired: %s:%s", summaryMsg, detailedMsg));
         log.error(String.format("VETO fired:  (Not an error) just need it printed to the log: %s:%s", summaryMsg, detailedMsg));
         mr.veto (summaryMsg, detailedMsg);
