@@ -53,6 +53,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 //import com.atlassian.bitbucket.i18n.I18nService;
+import com.atlassian.bitbucket.user.ApplicationUser;
+
+import com.atlassian.bitbucket.auth.AuthenticationContext;
 
 public class mergeTriggerCheck implements MergeRequestCheck {
 
@@ -88,8 +91,8 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         String keyPackageName  = repository.getProject().getKey();
         String fullPackageName = repository.getProject().getName();
         //String packageRevision = "4.0.0.84";
-            if(!keyPackageName.toLowerCase().startsWith("ar")) {//this is not our repo, send it on its way
-            log.info("this packageName.key doesn't start with ar");
+        if(!keyPackageName.equalsIgnoreCase("ar")) {//this is not our repo, send it on its way
+            log.info("this packageName.key doesn't equal AR");
             log.info(String.format("keyPackageName is equal to [%s][%s], RepositoryHookResult is now accepted", keyPackageName.toLowerCase(), request.getPullRequest().getToRef().getRepository().getName()));
             return ;//RepositoryHookResult.accepted();
         }
@@ -97,7 +100,27 @@ public class mergeTriggerCheck implements MergeRequestCheck {
         long lpullRequestId = pr.getId();
         String pullRequestId = String.valueOf(lpullRequestId);
         String jsonContainer = String.format("description=%s", pr.getDescription());
+        //obtain either the CurrentUser --> who hit the merge button or the pull Request Owner information
+        PullRequestParticipant pullRequestAuthor = pr.getAuthor();
+        String pullRequestAuthorName = pullRequestAuthor.getUser().getDisplayName();
+        Map<String, Object> myContext = mr.getContext();
+        if (myContext != null)
+            log.info(myContext.values().toString());
+        else
+            log.info("myContext is null\n");
+        //log.info(request.getContext().values().toString());
+        //Map<String, com.atlassian.bitbucket.request.RequestContext>  myContext = mr.getContext();
+        //Map<String, Object> myContext = mr.requestContext.getAuthenticationContext().getCurrentUser();
+
+
+        ApplicationUser buttonHitter = null;//myContext.getAuthenticationContext().getCurrentUser();
+        String buttonHitBy = null;//buttonHitter.getDisplayName();
         String mergeUser = "Administrator";
+        /* if(buttonHitBy.length() > 0)
+            mergeUser = buttonHitBy;
+        else */
+        if(pullRequestAuthorName.length() > 0)
+            mergeUser = pullRequestAuthorName;
         StringBuilder returnResults = new StringBuilder();
 
         String charset = "UTF-8";  // Or in Java 7 and later, use the constant: java.nio.charset.StandardCharsets.UTF_8.name()

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.dell.bitbucket.merge.checks</groupId>
     <artifactId>mergeTriggerCheck_4_14_3_1</artifactId>
-    <version>4.14.3.3-SNAPSHOTdocker2</version>
+    <version>4.14.3.5-SNAPSHOTdocker2</version>
     <organization>
         <name>Dell.com</name>
         <url>http://www.dell.com/</url>
